@@ -492,4 +492,84 @@ export class DocumentHelper {
       .filter(([, n]) => n.spec.toPlainText)
       .map(([name, n]) => [name, n.spec.toPlainText])
   );
+
+  /**
+   * Returns the document as a Remark HTML Slide deck.
+   *
+   * @param document The document or revision to convert
+   * @returns The document title and content as a remark slide deck in html
+   */
+  static toRemark(
+    document: Document | Revision | Collection | ProsemirrorData
+  ) {
+    let markdown = DocumentHelper.toMarkdown(document);
+
+    const mermaidCodeOpen = '```mermaidjs';
+    const mermaidCodeClose = '```';
+    const openDiv = '<div class="mermaid">';
+
+    while (true) {
+      const startIndex = markdown.indexOf(mermaidCodeOpen);
+      if (startIndex === -1) { break; }
+      markdown = markdown.substring(0, startIndex) + openDiv + markdown.substring(startIndex + mermaidCodeOpen.length, markdown.length);
+
+      const endIndex = markdown.indexOf(mermaidCodeClose, startIndex);
+      markdown = markdown.substring(0, endIndex) + markdown.substring(endIndex + mermaidCodeClose.length, markdown.length);
+    }
+
+    const output = `
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>${document.title}</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+${markdown}
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({
+        startOnLoad: false,
+        cloneCssStyles: false
+      });
+      function initMermaid(s) {
+        var diagrams = document.querySelectorAll('.mermaid');
+        var i;
+        for(i=0;i<diagrams.length;i++){
+          if(diagrams[i].offsetWidth>0){
+            mermaid.init(undefined, diagrams[i]);
+          }
+        }
+      }
+      slideshow.on('afterShowSlide', initMermaid);
+      initMermaid(slideshow.getSlides()[slideshow.getCurrentSlideIndex()]);
+    </script>
+  </body>
+</html>
+    `;
+
+    return output.trim();
+  }
 }

@@ -723,6 +723,9 @@ router.post(
     } else if (accept?.includes("text/markdown")) {
       contentType = "text/markdown";
       content = DocumentHelper.toMarkdown(document);
+    } else if (accept?.includes("application/remark")) {
+      contentType = "text/html";
+      content = DocumentHelper.toRemark(document);
     } else {
       ctx.body = {
         data: DocumentHelper.toMarkdown(document),

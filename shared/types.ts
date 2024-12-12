@@ -31,6 +31,7 @@ export enum ExportContentType {
   Markdown = "text/markdown",
   Html = "text/html",
   Pdf = "application/pdf",
+  Remark = "application/remark",
 }
 
 export enum FileOperationFormat {

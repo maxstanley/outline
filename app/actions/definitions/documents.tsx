@@ -459,6 +459,25 @@ export const downloadDocumentAsMarkdown = createAction({
   },
 });
 
+export const downloadDocumentAsRemark = createAction({
+  name: ({ t }) => t("Remark"),
+  analyticsName: "Download document as Remark Slides",
+  section: ActiveDocumentSection,
+  keywords: "slides export",
+  icon: <DownloadIcon />,
+  iconInContextMenu: false,
+  visible: ({ activeDocumentId, stores }) =>
+    !!activeDocumentId && stores.policies.abilities(activeDocumentId).download,
+  perform: async ({ activeDocumentId, stores }) => {
+    if (!activeDocumentId) {
+      return;
+    }
+
+    const document = stores.documents.get(activeDocumentId);
+    await document?.download(ExportContentType.Remark);
+  },
+});
+
 export const downloadDocument = createAction({
   name: ({ t, isContextMenu }) =>
     isContextMenu ? t("Download") : t("Download document"),
@@ -472,6 +491,7 @@ export const downloadDocument = createAction({
     downloadDocumentAsHTML,
     downloadDocumentAsPDF,
     downloadDocumentAsMarkdown,
+    downloadDocumentAsRemark,
   ],
 });
 
